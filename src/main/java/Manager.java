@@ -10,16 +10,7 @@ import java.net.URL;
 
 public class Manager {
     
-    protected int connectionStage;
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    private int connectionStage;
     
     
     
@@ -50,6 +41,10 @@ public class Manager {
     public Manager() {
         setUpJframe();
         connectionStage = 1;
+    }
+    
+    public int getConnectionStage() {
+        return connectionStage;
     }
     
     private void setUpJframe() {
