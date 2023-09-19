@@ -1,3 +1,5 @@
+package LanChatElements;
+
 import LanChatElements.LC_Button;
 import LanChatElements.LC_Constants;
 import LanChatElements.LC_Panel;
@@ -8,59 +10,26 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 
-public class Manager {
-    
-    private int connectionStage;
+public class LC_Window extends JFrame {
     
     
     
-    
-    static final Color green = LC_Constants.green;
-    
-    private JFrame frame;
-
-    private CardLayout bodyCards;
-    private LC_Panel body;
-    
-    
-    private CardLayout menuBarCards;
-    private LC_Panel menuBar;
-    
-    private LC_Panel createKey;
-    private LC_Panel enterKey;
-    
-    private LC_Panel menuBarStart;
-    
-    
-    public static void main(String[] args) {
-        Manager window = new Manager();
-    }
-    
-    
-    
-    public Manager() {
+    public LC_Window() {
         setUpJframe();
-        connectionStage = 1;
-    }
-    
-    public int getConnectionStage() {
-        return connectionStage;
     }
     
     private void setUpJframe() {
-        frame = new JFrame() {{
-            setTitle("LanChat");
-            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            setSize(500, 400);
-            setResizable(false);
-            setLocationRelativeTo(null);
-            setLayout(new BorderLayout());
-            
-            URL iconURL = getClass().getResource("icon.png");
-            assert iconURL != null;
-            ImageIcon icon = new ImageIcon(iconURL);
-            setIconImage(icon.getImage());
-        }};
+        setTitle("LanChat");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(500, 400);
+        setResizable(false);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+        
+        URL iconURL = getClass().getResource("icon.png");
+        assert iconURL != null;
+        ImageIcon icon = new ImageIcon(iconURL);
+        setIconImage(icon.getImage());
         
         
         bodyCards = new CardLayout();
@@ -140,6 +109,24 @@ public class Manager {
         
         frame.setVisible(true);
     }
+    
+    
+    static final Color green = LC_Constants.green;
+    
+    private JFrame frame;
+    
+    private CardLayout bodyCards;
+    private LC_Panel body;
+    
+    
+    private CardLayout menuBarCards;
+    private LC_Panel menuBar;
+    
+    private LC_Panel createKey;
+    private LC_Panel enterKey;
+    
+    private LC_Panel menuBarStart;
+    
 }
 
 
