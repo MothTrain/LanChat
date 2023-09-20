@@ -1,6 +1,6 @@
 package LanChatMessages;
 
-public class InvalidMessageException extends Exception {
+public class InvalidMessageException extends RuntimeException {
     
     public InvalidMessageException() {
         super("The message is not valid.");
