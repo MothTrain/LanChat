@@ -2,6 +2,10 @@ package LanChatMessages;
 
 import com.github.cliftonlabs.json_simple.JsonObject;
 
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
 
@@ -28,9 +32,10 @@ public class Message {
      * @throws InvalidMessageException if the message was invalid
      */
     public Message(JsonObject message, int currentStage) throws InvalidMessageException {
-        if(!isValidMessage(this.message = message, currentStage)) {throw new InvalidMessageException("Message contained invalid contents");}
+        if(!isValidMessage(message, currentStage)) {throw new InvalidMessageException("Message contained invalid contents");}
         
         this.stage = currentStage;
+        this.message = message;
     }
     
     /**
@@ -63,11 +68,13 @@ public class Message {
         try {
             type = MessageTypes.valueOf((String) test.get("MsgType"));
             
-            if (type.getStage() != currentStage) {return false;}
             
             for (String argument : type.getArguments()) {
                 if(test.get(argument) == null) {return false;}
             }
+            
+            if (type.getStage() == Integer.MAX_VALUE) {return true;}
+            if (type.getStage() != currentStage) {return false;}
             
         } catch (ClassCastException e) {
             return false; //Should not be possible
@@ -76,6 +83,16 @@ public class Message {
         }
         
         return true;
+    }
+    
+    public String toJson() {
+        return message.toJson();
+    }
+    
+    
+    @Override
+    public String toString() {
+        return message.toJson();
     }
     
     /**
@@ -208,7 +225,7 @@ public class Message {
          * The receiving node must release its sender and listener and display the new
          * connection menu
          */
-        ERROR(new String[]{"MsgType", "Message"}, null);
+        ERROR(new String[]{"MsgType", "Message"}, Integer.MAX_VALUE);
         
         
         MessageTypes(String[] parameters, Integer stage) {
