@@ -61,16 +61,10 @@ public class Sender extends Thread {
         interrupt();
         
         try {
-            socket.close();
+            socket.close(); // OutputStream will close with socket
         } catch (IOException e) {
             System.out.println("Close Error");
         }
-        try {
-            outputStream.close();
-        } catch (IOException e) {
-            System.out.println("Close Error");
-        }
-        
     }
     
     /**
@@ -105,6 +99,7 @@ public class Sender extends Thread {
             try {
                 writeThroughSocket(message);
             } catch (IOException e) {
+                close();
                 throw new RuntimeException(e);
             }
         }
