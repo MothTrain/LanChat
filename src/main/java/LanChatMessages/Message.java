@@ -1,11 +1,9 @@
 package LanChatMessages;
 
+import com.github.cliftonlabs.json_simple.JsonException;
 import com.github.cliftonlabs.json_simple.JsonObject;
+import com.github.cliftonlabs.json_simple.Jsoner;
 
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
 
@@ -32,23 +30,36 @@ public class Message {
      * @throws InvalidMessageException if the message was invalid
      */
     public Message(JsonObject message, int currentStage) throws InvalidMessageException {
-        if(!isValidMessage(message, currentStage)) {throw new InvalidMessageException("Message contained invalid contents");}
+        if(!isValidMessage(message, currentStage)) {
+            throw new InvalidMessageException("Message contained invalid contents");
+        }
         
-        this.stage = currentStage;
         this.message = message;
+    }
+    
+    /**
+     * @param message the JSON string to deserialize
+     * @param currentStage the current connection stage of the manager
+     * @throws InvalidMessageException if the JSON contained invalid contents or could not be deserialized
+     */
+    public Message(String message, int currentStage) throws InvalidMessageException {
+        
+        try {
+            this.message = (JsonObject) Jsoner.deserialize(message);
+        } catch (JsonException e) {
+            throw new InvalidMessageException(e.getMessage());
+        }
+        
+        if(!isValidMessage(this.message, currentStage)) {
+            throw new InvalidMessageException("Message contained invalid contents");
+        }
+        
     }
     
     /**
      * Contains the {@code final} message that the {@link Message} will carry
      */
     private final JsonObject message;
-    
-    /**
-     * {@code Final} connection stage of the at the time of initialisation
-     *
-     * @see MessageTypes
-     */
-    private final int stage;
     
     
     /**
@@ -89,7 +100,6 @@ public class Message {
         return message.toJson();
     }
     
-    
     @Override
     public String toString() {
         return message.toJson();
@@ -103,7 +113,7 @@ public class Message {
      */
     public enum MessageTypes {
         /**
-         * The {@link #NEW_CONNECTION} is a {@link #stage} 1 message, that is sent to a listening
+         * The NEW_CONNECTION is a {@link #stage} 1 message, that is sent to a listening
          * socket on {@link #stage} 1, to request a new chat connection be made. <br>
          * <br>
          * Params: <br>
