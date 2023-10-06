@@ -3,7 +3,7 @@ package LanChatElements;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
-public class LC_Button extends JButton {
+class LC_Button extends JButton {
     public LC_Button() {
         setContentAreaFilled(false); // Make the button transparent
         setUI(new ButtonUI());

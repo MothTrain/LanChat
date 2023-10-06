@@ -2,7 +2,7 @@ package LanChatElements;
 
 import java.awt.*;
 
-public class LC_Constants {
+class LC_Constants {
     private LC_Constants() {}
     
     public final static Color green = new Color(0,130,0);

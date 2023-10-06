@@ -12,8 +12,6 @@ import java.net.URL;
 
 public class LC_Window extends JFrame {
     
-    
-    
     public LC_Window() {
         setUpJframe();
     }
