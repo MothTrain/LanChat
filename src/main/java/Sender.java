@@ -1,5 +1,4 @@
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -7,9 +6,11 @@ import java.util.concurrent.TimeUnit;
 
 import LanChatMessages.Message;
 import com.github.cliftonlabs.json_simple.JsonObject;
+
 public class Sender extends Thread {
     private final Socket socket;
-    private final OutputStream outputStream;
+    private final DataOutputStream outputStream;
+    private final Managerable callback;
     
     /**
      * Queue to write messages that are to be sent. Maximum capacity is 1
@@ -22,12 +23,15 @@ public class Sender extends Thread {
      *
      * @param ipAddress the IP address of the host
      * @param port the port number of the host
+     * @param callback the callback for exception reporting
      * @throws IOException if an IOException occurs
      */
-    public Sender(String ipAddress, int port) throws IOException {
+    public Sender(String ipAddress, int port, Managerable callback) throws IOException {
+        this.callback = callback;
+        
         
         socket = new Socket(ipAddress, port);
-        outputStream = socket.getOutputStream();
+        outputStream = new DataOutputStream(socket.getOutputStream());
         
         start();
     }
@@ -48,9 +52,10 @@ public class Sender extends Thread {
      * @throws IOException If an IOException occurs during {@link OutputStream} writing
      */
     private synchronized void writeThroughSocket(Message message) throws IOException {
-        String msgStr = message.toJson();
+        byte[] msg = message.toSendableBytes();
         
-        outputStream.write(msgStr.getBytes(StandardCharsets.UTF_8));
+        outputStream.write(msg);
+        outputStream.flush();
     }
     
     /**

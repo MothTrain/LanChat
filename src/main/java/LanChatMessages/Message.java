@@ -5,6 +5,8 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 
 import java.net.ServerSocket;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -100,6 +102,16 @@ public class Message {
         return message.toJson();
     }
     
+    public byte[] toSendableBytes() {
+        byte[] json = toJson().getBytes(StandardCharsets.UTF_8);
+        byte[] send;
+        
+        send = ByteBuffer.allocate(4).putInt(json.length).array();
+        System.arraycopy(json, 0, send, 4, json.length);
+        
+        return send;
+    }
+    
     @Override
     public String toString() {
         return message.toJson();
@@ -109,7 +121,10 @@ public class Message {
      * MessageTypes details the message requirements that the Json messages
      * sent through LanChat must comply with. The documentation over each constant
      * also specifies the purpose of each message and the action taken by the sending
-     * and receiving node.
+     * and receiving node. <br>
+     * <br>
+     * All messages are send in byte form and are headed with the length of the rest
+     * of the message
      */
     public enum MessageTypes {
         /**
