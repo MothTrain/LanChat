@@ -1,12 +1,19 @@
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import LanChatMessages.Message;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
+/**
+ * The Sender class is responsible for sending {@link Message Messages} through
+ * a socket. Compliant with {@link LanChatMessages.Message.MessageTypes MessageTypes}
+ * communication protocol. <br>
+ * The socket of Sender is final and if the Sender is closed then a new sender must
+ * be created as it cannot be reopened.<br>
+ * All errors are transmitted through the call back
+ */
 public class Sender extends Thread {
     private final Socket socket;
     private final DataOutputStream outputStream;
@@ -97,7 +104,7 @@ public class Sender extends Thread {
                 try {
                     writeThroughSocket(msg);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    callback.exceptionEncountered(e);
                 }
                 continue;
             }
@@ -105,7 +112,7 @@ public class Sender extends Thread {
                 writeThroughSocket(message);
             } catch (IOException e) {
                 close();
-                throw new RuntimeException(e);
+                callback.exceptionEncountered(e);
             }
         }
     }
