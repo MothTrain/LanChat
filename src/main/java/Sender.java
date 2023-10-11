@@ -16,8 +16,20 @@ import com.github.cliftonlabs.json_simple.JsonObject;
  * All exceptions are transmitted through the call back
  */
 public class Sender extends Thread {
+    
+    /**
+     * The socket which the sender will use
+     */
     private final Socket socket;
+    
+    /**
+     * The output stream that the socket will be wrapped in for sending messages
+     */
     private final DataOutputStream outputStream;
+    
+    /**
+     * An instance of the manager that the sender will use to report back
+     */
     private final Managerable callback;
     
     /**
@@ -27,7 +39,8 @@ public class Sender extends Thread {
     private boolean closed = true;
     
     /**
-     * Queue to write messages that are to be sent. Maximum capacity is 1
+     * Queue to write messages that are to be sent. The queue is consumed
+     * by the {@link #run()} method. Maximum capacity is 1
      */
     private final LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>(1);
     
@@ -45,7 +58,7 @@ public class Sender extends Thread {
             throws IOException, TimeoutException, InterruptedException {
         
         this.callback = callback;
-        
+
         socket = new Socket(ipAddress, port);
         outputStream = new DataOutputStream(socket.getOutputStream());
         
@@ -69,6 +82,8 @@ public class Sender extends Thread {
     }
     
     /**
+     * Writes the message to the output stream. Using the {@link Message#toSendableBytes() toSendableBytes}
+     *
      * @param message The Json to send
      * @throws IOException If an IOException occurs during {@link OutputStream} writing
      */
@@ -80,8 +95,10 @@ public class Sender extends Thread {
     }
     
     /**
-     * Closes the socket and {@link OutputStream} and interrupts
-     * the sender {@link #run() messageQueue consumer}
+     * Closes the socket and {@link OutputStream} and interrupts the sender
+     * {@link #run() messageQueue consumer}. This should NOT be used to end the connection.
+     * {@link Message.MessageTypes#END_CONNECTION END_CONNECTION} or {@link Message.MessageTypes#ERROR}
+     * should be used first to prevent an error on the other side
      */
     public void close() {
         interrupt();
@@ -113,10 +130,12 @@ public class Sender extends Thread {
             try {
                 closed = false;
                 notifyAll();
+                
                 message = messageQueue.poll(1000L, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 break;
             }
+            
             if (isInterrupted()) {break;}
             
             if (message == null) {
