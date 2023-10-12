@@ -33,10 +33,19 @@ public class Sender extends Thread {
     private final Managerable callback;
     
     /**
-     * The closed boolean indicates if the Sender is ready to send messages.
-     * Send methods should throw {@link IllegalStateException} if closed is true
+     * The closed boolean indicates if the Sender's {@link #run()} method is working.
+     * If closed is true but the sender is connected then the message must be written
+     * straight to the socket.
+     *
+     * @see #connected
      */
     private boolean closed = true;
+    
+    /**
+     * The connected boolean indicates if the socket is open and ready to send messages.
+     * An exception must be thrown if connected if false, when a message attempted to be sent.
+     */
+    private boolean connected = false;
     
     /**
      * Queue to write messages that are to be sent. The queue is consumed
@@ -46,39 +55,43 @@ public class Sender extends Thread {
     
     
     /**
-     * Creates socket resources and waits for messages
+     * Creates a sender instance. This does not start the {@link #run()} so
+     * {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKing} will not happen
      *
      * @param ipAddress the IP address of the host
      * @param port the port number of the host
      * @param callback the callback for exception reporting
      * @throws IOException if an IOException occurs
-     * @throws TimeoutException if the initialisation of the thread fr
-     */
-    public Sender(String ipAddress, int port, Managerable callback)
-            throws IOException, TimeoutException, InterruptedException {
+     * */
+    public Sender(String ipAddress, int port, Managerable callback) throws IOException {
         
         this.callback = callback;
 
         socket = new Socket(ipAddress, port);
         outputStream = new DataOutputStream(socket.getOutputStream());
         
-        start();
-        
-        wait(500L);
-        if (closed) {throw new TimeoutException("Thread start took too long: SHOULD NOT BE POSSIBLE");}
+        connected = true;
     }
     
     /**
-     * Adds a message to the {@link Sender#messageQueue} to sent
-     * through the assigned connection
+     * Sends a message through the assigned connection
      *
      * @param message The message to send
      * @throws IllegalStateException If the sender queue is full
      * or the Sender is closed/not yet open
+     * @throws IOException If an IO exception occurs
+     *
+     * @see #writeThroughSocket(Message)
+     * @see #connected
      */
-    public synchronized void sendMessage(Message message) throws IllegalStateException {
-        if (closed) {throw new IllegalStateException("The Sender is closed");}
-        messageQueue.add(message);
+    public synchronized void sendMessage(Message message) throws IllegalStateException, IOException {
+        if (!connected) {
+            throw new IllegalStateException("The Sender is not connected");
+        } else if (closed) {
+            writeThroughSocket(message);
+        } else {
+            messageQueue.add(message);
+        }
     }
     
     /**
@@ -90,13 +103,20 @@ public class Sender extends Thread {
     private synchronized void writeThroughSocket(Message message) throws IOException {
         byte[] msg = message.toSendableBytes();
         
-        outputStream.write(msg);
-        outputStream.flush();
+        try {
+            outputStream.write(msg);
+            outputStream.flush();
+        } catch (IOException e) {
+            close();
+            throw e;
+        }
+        
     }
     
     /**
-     * Closes the socket and {@link OutputStream} and interrupts the sender
-     * {@link #run() messageQueue consumer}. This should NOT be used to end the connection.
+     * Closes the socket and {@link OutputStream}, interrupts the sender
+     * {@link #run() messageQueue consumer} and resets the {@link #closed} and {@link #connected} variables.
+     * This should NOT be used to end the connection.
      * {@link Message.MessageTypes#END_CONNECTION END_CONNECTION} or {@link Message.MessageTypes#ERROR}
      * should be used first to prevent an error on the other side
      */
@@ -109,14 +129,25 @@ public class Sender extends Thread {
             System.out.println("Close Error");
         } finally {
             closed = true;
+            connected = false;
         }
     }
     
     /**
-     * @return returns the closed state of the Sender
+     * Returns the closed state of the Sender
+     * @return the closed state
      * @see #closed
      */
     public boolean isClosed() {return closed;}
+    
+    /**
+     * Returns the connected state of the Sender
+     * @return the connected state
+     * @see #connected
+     */
+    public boolean isConnected() {
+        return connected;
+    }
     
     /**
      * The sender thread consumes {@link Message Messages} and writes to
@@ -126,10 +157,10 @@ public class Sender extends Thread {
     @Override
     public void run() {
         while (!isInterrupted()) {
+            
             Message message;
             try {
                 closed = false;
-                notifyAll();
                 
                 message = messageQueue.poll(1000L, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
