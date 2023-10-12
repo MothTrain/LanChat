@@ -15,7 +15,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
  * be created as it cannot be reopened.<br>
  * All exceptions are transmitted through the call back
  */
-public class Sender extends Thread {
+public class Sender {
     
     /**
      * The socket which the sender will use
@@ -33,7 +33,7 @@ public class Sender extends Thread {
     private final Managerable callback;
     
     /**
-     * The closed boolean indicates if the Sender's {@link #run()} method is working.
+     * The closed boolean indicates if the Sender's {@link #thread} method is working.
      * If closed is true but the sender is connected then the message must be written
      * straight to the socket.
      *
@@ -49,13 +49,13 @@ public class Sender extends Thread {
     
     /**
      * Queue to write messages that are to be sent. The queue is consumed
-     * by the {@link #run()} method. Maximum capacity is 1
+     * by the {@link #thread} method. Maximum capacity is 1
      */
     private final LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>(1);
     
     
     /**
-     * Creates a sender instance. This does not start the {@link #run()} so
+     * Creates a sender instance. This does not start the {@link #thread} so
      * {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKing} will not happen
      *
      * @param ipAddress the IP address of the host
@@ -115,13 +115,13 @@ public class Sender extends Thread {
     
     /**
      * Closes the socket and {@link OutputStream}, interrupts the sender
-     * {@link #run() messageQueue consumer} and resets the {@link #closed} and {@link #connected} variables.
+     * {@link #thread messageQueue consumer} and resets the {@link #closed} and {@link #connected} variables.
      * This should NOT be used to end the connection.
      * {@link Message.MessageTypes#END_CONNECTION END_CONNECTION} or {@link Message.MessageTypes#ERROR}
      * should be used first to prevent an error on the other side
      */
     public void close() {
-        interrupt();
+        thread.interrupt();
         
         try {
             socket.close(); // OutputStream will close with socket
@@ -150,44 +150,54 @@ public class Sender extends Thread {
     }
     
     /**
+     * Starts the thread that sends {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKs}
+     * regularly
+     */
+    public void start() {
+        thread.start();
+    }
+    
+    /**
      * The sender thread consumes {@link Message Messages} and writes to
      * the {@link OutputStream}. It sends a {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICK}
      * when no message has been sent for 1 second
      */
-    @Override
-    public void run() {
-        while (!isInterrupted()) {
-            
-            Message message;
-            try {
-                closed = false;
+    private final Thread thread = new Thread() {
+        @Override
+        public void run() {
+            while (!isInterrupted()) {
                 
-                message = messageQueue.poll(1000L, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException e) {
-                break;
-            }
-            
-            if (isInterrupted()) {break;}
-            
-            if (message == null) {
-               JsonObject WatchdogKick = new JsonObject() {{
-                   put("MsgType", "WATCHDOG_KICK");
-               }};
-               Message msg = new Message(WatchdogKick, 3);
-                
+                Message message;
                 try {
-                    writeThroughSocket(msg);
+                    closed = false;
+                    
+                    message = messageQueue.poll(1000L, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                
+                if (isInterrupted()) {break;}
+                
+                if (message == null) {
+                    JsonObject WatchdogKick = new JsonObject() {{
+                        put("MsgType", "WATCHDOG_KICK");
+                    }};
+                    Message msg = new Message(WatchdogKick, 3);
+                    
+                    try {
+                        writeThroughSocket(msg);
+                    } catch (IOException e) {
+                        callback.exceptionEncountered(e);
+                    }
+                    continue;
+                }
+                try {
+                    writeThroughSocket(message);
                 } catch (IOException e) {
+                    close();
                     callback.exceptionEncountered(e);
                 }
-                continue;
-            }
-            try {
-                writeThroughSocket(message);
-            } catch (IOException e) {
-                close();
-                callback.exceptionEncountered(e);
             }
         }
-    }
+    };
 }
