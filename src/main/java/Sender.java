@@ -2,7 +2,6 @@ import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import LanChatMessages.Message;
 import com.github.cliftonlabs.json_simple.JsonObject;
@@ -33,19 +32,19 @@ public class Sender {
     private final Managerable callback;
     
     /**
-     * The closed boolean indicates if the Sender's {@link #thread} method is working.
-     * If closed is true but the sender is connected then the message must be written
+     * The active boolean indicates if the Sender's {@link #thread} method is working.
+     * If active is false but the sender is not closed then the message must be written
      * straight to the socket.
      *
-     * @see #connected
+     * @see #closed
      */
-    private boolean closed = true;
+    private boolean active = false;
     
     /**
-     * The connected boolean indicates if the socket is open and ready to send messages.
-     * An exception must be thrown if connected if false, when a message attempted to be sent.
+     * The closed boolean indicates if the socket is not open and ready to send messages.
+     * An exception must be thrown if connected if true, when a message attempted to be sent.
      */
-    private boolean connected = false;
+    private boolean closed = true;
     
     /**
      * Queue to write messages that are to be sent. The queue is consumed
@@ -70,7 +69,7 @@ public class Sender {
         socket = new Socket(ipAddress, port);
         outputStream = new DataOutputStream(socket.getOutputStream());
         
-        connected = true;
+        closed = false;
     }
     
     /**
@@ -78,16 +77,16 @@ public class Sender {
      *
      * @param message The message to send
      * @throws IllegalStateException If the sender queue is full
-     * or the Sender is closed/not yet open
+     * or the Sender is closed
      * @throws IOException If an IO exception occurs
      *
      * @see #writeThroughSocket(Message)
-     * @see #connected
+     * @see #closed
      */
     public synchronized void sendMessage(Message message) throws IllegalStateException, IOException {
-        if (!connected) {
+        if (closed) {
             throw new IllegalStateException("The Sender is not connected");
-        } else if (closed) {
+        } else if (!active) {
             writeThroughSocket(message);
         } else {
             messageQueue.add(message);
@@ -115,7 +114,7 @@ public class Sender {
     
     /**
      * Closes the socket and {@link OutputStream}, interrupts the sender
-     * {@link #thread messageQueue consumer} and resets the {@link #closed} and {@link #connected} variables.
+     * {@link #thread messageQueue consumer} and resets the {@link #active} and {@link #closed} variables.
      * This should NOT be used to end the connection.
      * {@link Message.MessageTypes#END_CONNECTION END_CONNECTION} or {@link Message.MessageTypes#ERROR}
      * should be used first to prevent an error on the other side
@@ -128,25 +127,25 @@ public class Sender {
         } catch (IOException e) {
             System.out.println("Close Error");
         } finally {
+            active = false;
             closed = true;
-            connected = false;
         }
     }
+    
+    /**
+     * Returns the active state of the Sender
+     * @return the active state
+     * @see #active
+     */
+    public boolean isActive() {return active;}
     
     /**
      * Returns the closed state of the Sender
      * @return the closed state
      * @see #closed
      */
-    public boolean isClosed() {return closed;}
-    
-    /**
-     * Returns the connected state of the Sender
-     * @return the connected state
-     * @see #connected
-     */
-    public boolean isConnected() {
-        return connected;
+    public boolean isClosed() {
+        return closed;
     }
     
     /**
@@ -169,7 +168,7 @@ public class Sender {
                 
                 Message message;
                 try {
-                    closed = false;
+                    active = true;
                     
                     message = messageQueue.poll(1000L, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
@@ -187,6 +186,7 @@ public class Sender {
                     try {
                         writeThroughSocket(msg);
                     } catch (IOException e) {
+                        close();
                         callback.exceptionEncountered(e);
                     }
                     continue;
