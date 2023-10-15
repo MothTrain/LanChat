@@ -14,7 +14,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
  * be created as it cannot be reopened.<br>
  * All exceptions are transmitted through the call back
  */
-public class Sender {
+public class Sender implements AutoCloseable {
     
     /**
      * The socket which the sender will use
@@ -85,7 +85,7 @@ public class Sender {
      */
     public synchronized void sendMessage(Message message) throws IllegalStateException, IOException {
         if (closed) {
-            throw new IllegalStateException("The Sender is not connected");
+            throw new IllegalStateException("The Sender is closed");
         } else if (!active) {
             writeThroughSocket(message);
         } else {
@@ -119,6 +119,7 @@ public class Sender {
      * {@link Message.MessageTypes#END_CONNECTION END_CONNECTION} or {@link Message.MessageTypes#ERROR}
      * should be used first to prevent an error on the other side
      */
+    @Override
     public void close() {
         thread.interrupt();
         
@@ -153,6 +154,7 @@ public class Sender {
      * regularly
      */
     public void start() {
+        if (closed) {throw new IllegalStateException("Sender is closed");}
         thread.start();
     }
     
