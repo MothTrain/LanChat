@@ -32,6 +32,12 @@ public class Sender implements AutoCloseable {
     private final Managerable callback;
     
     /**
+     * The number of milliseconds that the Sender will wait after sending a message
+     * that a {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICK}
+     */
+    private final long kickRate;
+    
+    /**
      * The active boolean indicates if the Sender's {@link #thread} method is working.
      * If active is false but the sender is not closed then the message must be written
      * straight to the socket.
@@ -58,14 +64,17 @@ public class Sender implements AutoCloseable {
      * {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKing} will not happen
      *
      * @param ipAddress the IP address of the host
-     * @param port the port number of the host
-     * @param callback the callback for exception reporting
+     * @param port      the port number of the host
+     * @param callback  the callback for exception reporting
+     * @param kickRate  how often {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKs}
+     *                  will be sent
      * @throws IOException if an IOException occurs
-     * */
-    public Sender(String ipAddress, int port, Managerable callback) throws IOException {
+     */
+    public Sender(String ipAddress, int port, Managerable callback, long kickRate) throws IOException {
         
         this.callback = callback;
-
+        this.kickRate = kickRate;
+        
         socket = new Socket(ipAddress, port);
         outputStream = new DataOutputStream(socket.getOutputStream());
         
@@ -172,7 +181,7 @@ public class Sender implements AutoCloseable {
                 try {
                     active = true;
                     
-                    message = messageQueue.poll(1000L, TimeUnit.MILLISECONDS);
+                    message = messageQueue.poll(kickRate, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     break;
                 }
