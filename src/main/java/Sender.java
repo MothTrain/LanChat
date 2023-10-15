@@ -12,7 +12,6 @@ import com.github.cliftonlabs.json_simple.JsonObject;
  * {@link LanChatMessages.Message.MessageTypes MessageTypes} communication protocol. <br>
  * The socket of Sender is final and if the Sender is closed then a new sender must
  * be created as it cannot be reopened.<br>
- * All exceptions are transmitted through the call back
  */
 public class Sender implements AutoCloseable {
     
@@ -27,7 +26,8 @@ public class Sender implements AutoCloseable {
     private final DataOutputStream outputStream;
     
     /**
-     * An instance of the manager that the sender will use to report back
+     * An instance of the manager that the sender will use to report exceptions that
+     * occur in the Sender's thread
      */
     private final Managerable callback;
     
@@ -38,28 +38,30 @@ public class Sender implements AutoCloseable {
     private final long kickRate;
     
     /**
-     * The active boolean indicates if the Sender's {@link #thread} method is working.
-     * If active is false but the sender is not closed then the message must be written
-     * straight to the socket.
+     * The active boolean indicates if the Sender's {@link #thread} is running.
+     * If active is false but the sender is not closed then the message will be written
+     * straight to the socket by the sender automatically
      *
      * @see #closed
+     * @see #start()
      */
     private boolean active = false;
     
     /**
-     * The closed boolean indicates if the socket is not open and ready to send messages.
-     * An exception must be thrown if connected if true, when a message attempted to be sent.
+     * The closed boolean indicates if the socket is not ready to send messages.
+     * An exception must be thrown if connected if true, when a message is attempted to be sent.
      */
     private boolean closed = true;
     
     /**
-     * Queue to write messages that are to be sent. The queue is consumed
-     * by the {@link #thread} method. Maximum capacity is 1
+     * Queue that messages are writen to, that are to be sent. The queue is only used
+     * when the Sender is {@link #active}. The queue is consumed by the {@link #thread}.
+     * Maximum capacity is 1
      */
     private final LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>(1);
     
     
-    /**
+     /**
      * Creates a sender instance. This does not start the {@link #thread} so
      * {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKing} will not happen
      *
@@ -82,7 +84,7 @@ public class Sender implements AutoCloseable {
     }
     
     /**
-     * Sends a message through the assigned connection
+     * Sends a message through the sender
      *
      * @param message The message to send
      * @throws IllegalStateException If the sender queue is full
@@ -103,27 +105,23 @@ public class Sender implements AutoCloseable {
     }
     
     /**
-     * Writes the message to the output stream. Using the {@link Message#toSendableBytes() toSendableBytes}
+     * Writes the message to the output stream. Using the
+     * {@link Message#toSendableBytes() toSendableBytes} method
      *
-     * @param message The Json to send
+     * @param message The message to send
      * @throws IOException If an IOException occurs during {@link OutputStream} writing
      */
     private synchronized void writeThroughSocket(Message message) throws IOException {
         byte[] msg = message.toSendableBytes();
         
-        try {
-            outputStream.write(msg);
-            outputStream.flush();
-        } catch (IOException e) {
-            close();
-            throw e;
-        }
+        outputStream.write(msg);
+        outputStream.flush();
         
     }
     
     /**
      * Closes the socket and {@link OutputStream}, interrupts the sender
-     * {@link #thread messageQueue consumer} and resets the {@link #active} and {@link #closed} variables.
+     * {@link #thread} and resets the {@link #active} and {@link #closed} variables.
      * This should NOT be used to end the connection.
      * {@link Message.MessageTypes#END_CONNECTION END_CONNECTION} or {@link Message.MessageTypes#ERROR}
      * should be used first to prevent an error on the other side
@@ -170,7 +168,7 @@ public class Sender implements AutoCloseable {
     /**
      * The sender thread consumes {@link Message Messages} and writes to
      * the {@link OutputStream}. It sends a {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICK}
-     * when no message has been sent for 1 second
+     * when no message has been sent for more than the {@link #kickRate}
      */
     private final Thread thread = new Thread() {
         @Override
@@ -209,6 +207,8 @@ public class Sender implements AutoCloseable {
                     callback.exceptionEncountered(e);
                 }
             }
+            
         }
     };
+    
 }
