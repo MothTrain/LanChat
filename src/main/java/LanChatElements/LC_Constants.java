@@ -7,7 +7,6 @@ import java.awt.*;
 public class LC_Constants {
     private LC_Constants() {}
     
-    public final static Color transparent = new Color(0,0,0,0);
     public final static Color green = new Color(0,135,0);
     public final static Color buttonGreen = new Color(0,123,0);
     public final static Color pressedButtonGreen = new Color(0,110,0);
@@ -16,6 +15,7 @@ public class LC_Constants {
     public final static Color receiversRed = new Color(255, 66, 28);
     
     public final static Font buttonFont = new Font("Arial", Font.PLAIN, 20);
+    public final static Font defaultFont = new Font("Arial", Font.PLAIN, 12);
     
     public final static SimpleAttributeSet sendersStyle;
     
