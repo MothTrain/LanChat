@@ -10,18 +10,24 @@ import java.io.StringBufferInputStream;
 import java.text.AttributedString;
 import java.util.ArrayList;
 
-public class LC_ChatPane {
+public class LC_ChatPane extends JScrollPane{
     private final JTextPane textPane = new JTextPane() {{
         setEditable(false);
     }};
     
-    private final JScrollPane scrollPane = new JScrollPane(textPane) {{
+    public LC_ChatPane() {
+        setViewportView(textPane);
+        
         getVerticalScrollBar().setBlockIncrement(10);
         getVerticalScrollBar().setUnitIncrement(15);
-    }};
+    }
     
     StyledDocument doc = textPane.getStyledDocument();
     
+    
+    public void reset() {
+        textPane.setText("");
+    }
     
     public void addSentMessage(String msg) {
         String username = "You:  ";
@@ -89,8 +95,8 @@ public class LC_ChatPane {
         
         try {
             doc.insertString(lengthAtStart, wrapString(msg,
-                    LC_Constants.informationStyle,
-                    280) + "\n",
+                            LC_Constants.informationStyle,
+                            280) + "\n",
                     LC_Constants.informationStyle);
             
         } catch (BadLocationException e) {
@@ -99,11 +105,6 @@ public class LC_ChatPane {
         doc.setParagraphAttributes(lengthAtStart, msg.length(),
                 LC_Constants.informationStyle, false);
         
-    }
-    
-    
-    public JScrollPane getTextPane() {
-        return scrollPane;
     }
     
     

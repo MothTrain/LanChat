@@ -38,6 +38,7 @@ public class LC_Window extends JFrame {
         
         createKey = new LC_Panel();
         createKey.add(new JTextArea() {{setText("Create Connection Key"); setFont(LC_Constants.buttonFont);}});
+        chat.add(chatPane = new LC_ChatPane(), BorderLayout.CENTER);
         
         enterKey = new LC_Panel();
         enterKey.add(new JTextArea() {{setText("Enter Connection Key"); setFont(LC_Constants.buttonFont);}});
