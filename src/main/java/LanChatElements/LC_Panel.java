@@ -16,4 +16,8 @@ class LC_Panel extends JPanel {
             setOpaque(false);
         }}, constraints, -1);
     }
+    
+    public void wrapAdd(JComponent comp) {
+        add(new JPanel() {{add(comp);}});
+    }
 }
