@@ -369,6 +369,11 @@ public class LC_Window extends JFrame {
                 JOptionPane.ERROR_MESSAGE, error);
     }
     
+    public void connectionDeclined() {
+        bodyCards.show(body,"enterKey");
+        menuBarCards.show(menuBar, "enterKey");
+    }
+    
     
     private CardLayout bodyCards;
     private LC_Panel body;
