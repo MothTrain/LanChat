@@ -35,6 +35,7 @@ public final class Message {
         }
         
         this.message = message;
+        this.type = MessageTypes.valueOf(get("MsgType"));
     }
     
     /**
@@ -56,6 +57,7 @@ public final class Message {
         if(!isValidMessage(this.message, currentStage)) {
             throw new InvalidMessageException("Message contained invalid contents");
         }
+        this.type = MessageTypes.valueOf(get("MsgType"));
         
     }
     
@@ -86,6 +88,11 @@ public final class Message {
      * Contains the {@code final} message that the {@link Message} will carry
      */
     private final JsonObject message;
+    
+    /**
+     * The type of the message
+     */
+    public final MessageTypes type;
     
     
     /**
