@@ -119,7 +119,7 @@ public enum MessageTypes {
      * The receiving node must release its sender and listener and display the new
      * connection menu
      */
-    END_CONNECTION(new String[]{"MsgType"}, 3),
+    END_CONNECTION(new String[]{"MsgType"}, Integer.MAX_VALUE),
     
     /**
      * The {@code END_CONNECTION} is an any stage message, that is sent to a listening
