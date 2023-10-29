@@ -60,6 +60,29 @@ public final class Message {
     }
     
     /**
+     * Gets the string base on the assigned key.
+     *
+     * @param key The name of the json field
+     * @return The value of the field
+     *
+     * @throws NullPointerException If there was no such field
+     * @throws InvalidMessageException If the get call returned something other
+     * than a string
+     */
+    public String get(String key) {
+        Object value = message.get(key);
+        
+        if (value == null) {throw new NullPointerException("There was no" +
+                " field of that name");}
+        
+        if (value instanceof String) {
+            return (String) value;
+        } else {
+            throw new InvalidMessageException("Not a String");
+        }
+    }
+    
+    /**
      * Contains the {@code final} message that the {@link Message} will carry
      */
     private final JsonObject message;
