@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 public final class Message {
 
     /**
-     * Creates an instance of the Message class
+     * Creates a message object using a json object
      *
      * @param message the {@link com.github.cliftonlabs.json_simple.JsonObject} that the object will carry
      * @param currentStage the current connection stage of the manager
@@ -38,6 +38,8 @@ public final class Message {
     }
     
     /**
+     * Creates a message object using a JSON string
+     *
      * @param message the JSON string to deserialize
      * @param currentStage the current connection stage of the manager
      * @throws InvalidMessageException if the JSON contained invalid contents or could not be deserialized
