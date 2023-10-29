@@ -1,5 +1,8 @@
 package LanChatElements;
 
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
@@ -17,8 +20,9 @@ public class LC_Constants {
     public final static Font buttonFont = new Font("Arial", Font.PLAIN, 20);
     public final static Font defaultFont = new Font("Arial", Font.PLAIN, 12);
     
-    public final static SimpleAttributeSet sendersStyle;
+    public final static Insets buttonInsets = new Insets(2,10,4,10);
     
+    public final static SimpleAttributeSet sendersStyle;
     static {
         sendersStyle = new SimpleAttributeSet();
         StyleConstants.setForeground(sendersStyle, Color.BLACK);
@@ -64,4 +68,6 @@ public class LC_Constants {
         StyleConstants.setAlignment(informationStyle, StyleConstants.ALIGN_CENTER);
         StyleConstants.setFontFamily(informationStyle, "Arial");
     }
+    
+    public final static Border border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 }

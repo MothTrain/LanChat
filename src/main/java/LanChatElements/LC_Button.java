@@ -34,7 +34,7 @@ class LC_Button extends JButton {
     }
     
     public Insets getInsets() {
-        return new Insets(2,10,4,10);
+        return LC_Constants.buttonInsets;
     }
     
     @Override
