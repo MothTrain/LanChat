@@ -42,7 +42,7 @@ public enum MessageTypes {
      * The sending node must release its listener and sender and show the new connection menu <br>
      * The receiving node must release its listener and sender and show the new connection menu
      */
-    DECLINE_CONNECTION(new String[]{"MsgType", "Username"}, 2),
+    DECLINE_CONNECTION(new String[]{"MsgType"}, 2),
     
     /**
      * The {@code ACCEPT_CONNECTION} is a {@link #stage} 2 message, that is sent to a listening
@@ -57,7 +57,7 @@ public enum MessageTypes {
      * The receiving node must begin listening for {@link #stage} 3 messages
      * and display and chat window.
      */
-    ACCEPT_CONNECTION(new String[]{"MsgType"}, 2),
+    ACCEPT_CONNECTION(new String[]{"MsgType", "Username"}, 2),
     
     /**
      * The {@code MSG} is a {@link #stage} 3 message, that is sent to a listening
