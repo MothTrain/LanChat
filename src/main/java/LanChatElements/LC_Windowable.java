@@ -16,11 +16,12 @@ public interface LC_Windowable {
     ConnectionKey connectionListen();
     
     /**
-     * Tells the manager to create a connection with the provided port and IP
-     * @param port The port to connect to
-     * @param IP The IP to connect to
+     * Tells the manager to create a connection with the provided key
+     * @param connectionKey The connection key with connection information
+     *
+     * @see ConnectionKey
      */
-    void connectTo(int port, String IP);
+    void connectTo(String connectionKey, String username);
     
     /**
      * Cancel listening for a new connection (only in stage 1)
@@ -43,5 +44,12 @@ public interface LC_Windowable {
      * and close the listener and sender
      */
     void endConnection();
+    
+    /**
+     * Signals whether the user has accepted the connection
+     *
+     * @param allowed True if the user has accepted, false if the user declined
+     */
+    void allowConnection(boolean allowed);
 }
 
