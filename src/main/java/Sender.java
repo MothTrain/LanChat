@@ -4,12 +4,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import LanChatMessages.Message;
+import LanChatMessages.MessageTypes;
 import com.github.cliftonlabs.json_simple.JsonObject;
 
 /**
  * The Sender class is responsible for sending {@link Message Messages} through
  * a socket and kicks the watchdog regularly. Compliant with
- * {@link LanChatMessages.Message.MessageTypes MessageTypes} communication protocol. <br>
+ * {@link MessageTypes MessageTypes} communication protocol. <br>
  * The socket of Sender is final and if the Sender is closed then a new sender must
  * be created as it cannot be reopened.<br>
  */
@@ -33,7 +34,7 @@ public class Sender implements AutoCloseable {
     
     /**
      * The number of milliseconds that the Sender will wait after sending a message
-     * that a {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICK}
+     * that a {@link MessageTypes#WATCHDOG_KICK WATCHDOG_KICK}
      */
     private final long kickRate;
     
@@ -63,12 +64,12 @@ public class Sender implements AutoCloseable {
     
      /**
      * Creates a sender instance. This does not start the {@link #thread} so
-     * {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKing} will not happen
+     * {@link MessageTypes#WATCHDOG_KICK WATCHDOG_KICKing} will not happen
      *
      * @param ipAddress the IP address of the host
      * @param port      the port number of the host
      * @param callback  the callback for exception reporting
-     * @param kickRate  how often {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKs}
+     * @param kickRate  how often {@link MessageTypes#WATCHDOG_KICK WATCHDOG_KICKs}
      *                  will be sent
      * @throws IOException if an IOException occurs
      */
@@ -123,7 +124,7 @@ public class Sender implements AutoCloseable {
      * Closes the socket and {@link OutputStream}, interrupts the sender
      * {@link #thread} and resets the {@link #active} and {@link #closed} variables.
      * This should NOT be used to end the connection.
-     * {@link Message.MessageTypes#END_CONNECTION END_CONNECTION} or {@link Message.MessageTypes#ERROR}
+     * {@link MessageTypes#END_CONNECTION END_CONNECTION} or {@link MessageTypes#ERROR}
      * should be used first to prevent an error on the other side
      */
     @Override
@@ -157,7 +158,7 @@ public class Sender implements AutoCloseable {
     }
     
     /**
-     * Starts the thread that sends {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICKs}
+     * Starts the thread that sends {@link MessageTypes#WATCHDOG_KICK WATCHDOG_KICKs}
      * regularly
      */
     public void start() {
@@ -167,7 +168,7 @@ public class Sender implements AutoCloseable {
     
     /**
      * The sender thread consumes {@link Message Messages} and writes to
-     * the {@link OutputStream}. It sends a {@link Message.MessageTypes#WATCHDOG_KICK WATCHDOG_KICK}
+     * the {@link OutputStream}. It sends a {@link MessageTypes#WATCHDOG_KICK WATCHDOG_KICK}
      * when no message has been sent for more than the {@link #kickRate}
      */
     private final Thread thread = new Thread() {
