@@ -85,8 +85,7 @@ public enum MessageTypes {
      * The sending node must reset its WATCHDOG_KICK sender timer. This should be
      * automatic in the form of a timeout
      * {@link java.util.concurrent.LinkedBlockingQueue#poll(long, TimeUnit)}<br>
-     * The receiving node must reset its WATCHDOG_KICK sender timer. This should be
-     * automatic in the form of a timeout {@link ServerSocket#accept()}
+     * The receiving node must reset its WATCHDOG_KICK sender timer.
      */
     WATCHDOG_KICK(new String[]{"MsgType"}, 3),
     
