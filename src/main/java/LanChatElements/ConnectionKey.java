@@ -15,14 +15,14 @@ public class ConnectionKey {
     /**
      * The port that the listening node is listening on
      */
-    final int port;
+    public final int port;
     
     /**
      * The IPv4 address of the listening node
      *
      * @see Inet4Address
      */
-    final String IP;
+    public final String IP;
     
     /**
      * Holds a dash ({@code "-"}) delineated string composed of 2 sections.
@@ -37,7 +37,7 @@ public class ConnectionKey {
      * @see #toBase36(String)
      * @see Inet4Address
      */
-    final String ConnectionKey;
+    public final String ConnectionKey;
     
     /**
      * Holds a dash ({@code "-"}) delineated string composed of 5
@@ -48,7 +48,7 @@ public class ConnectionKey {
      * @see #toBase36(String)
      * @see Inet4Address
      */
-    final String uncondensedConnectionKey;
+    public final String uncondensedConnectionKey;
     
     /**
      * Creates a connection key object including the connection key
