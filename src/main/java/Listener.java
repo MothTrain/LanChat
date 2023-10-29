@@ -144,4 +144,12 @@ public class Listener implements AutoCloseable {
             }
         }
     };
+    
+    public int getPort() {
+        return port;
+    }
+    
+    public String getIP() {
+        return clientSocket.getInetAddress().toString();
+    }
 }

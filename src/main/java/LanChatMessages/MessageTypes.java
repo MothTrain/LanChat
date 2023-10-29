@@ -18,7 +18,6 @@ public enum MessageTypes {
      * socket on {@link #stage} 1, to request a new chat connection be made. <br>
      * <br>
      * Params: <br>
-     * <i>IP -</i> the IP address of the sending node<br>
      * <i>Username -</i> the username of the sending node <br>
      * <br>
      * Action taken: <br>
@@ -29,7 +28,7 @@ public enum MessageTypes {
      * through the same port as it is listening on and through the IP it received and
      * listen for {@link #stage} 3 messages
      */
-    NEW_CONNECTION(new String[]{"MsgType", "IP", "Username"}, 1),
+    NEW_CONNECTION(new String[]{"MsgType", "Username"}, 1),
     
     /**
      * The {@code DECLINE_CONNECTION} is a {@link #stage} 2 message, that is sent to a listening
