@@ -316,8 +316,6 @@ public class LC_Window extends JFrame {
             
             bodyCards.show(body, "createKey");
             menuBarCards.show(menuBar, "createKey");
-            
-            checkAllowConnection("Hullo");
         });
         
         enterKeyButton.addActionListener(e -> {
