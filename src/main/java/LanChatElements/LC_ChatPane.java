@@ -29,6 +29,7 @@ public class LC_ChatPane extends JScrollPane{
         textPane.setText("");
     }
     
+    
     public void addSentMessage(String msg) {
         String username = "You:  ";
         int lengthAtStart = doc.getLength();
@@ -112,7 +113,7 @@ public class LC_ChatPane extends JScrollPane{
         String[] words = string.split(" ");
         Font font = getFont(style);
         
-        FontMetrics fontMetrics = generateFontMetric(font);
+        FontMetrics fontMetrics = generateFontMetric();
         
         int[] wordLengths = new int[words.length];
         
@@ -156,7 +157,7 @@ public class LC_ChatPane extends JScrollPane{
         return output;
     }
     
-    private FontMetrics generateFontMetric(Font font) {
+    private FontMetrics generateFontMetric() {
         Graphics g = textPane.getGraphics();
         
         return g.getFontMetrics();

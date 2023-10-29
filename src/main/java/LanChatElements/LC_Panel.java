@@ -13,7 +13,7 @@ class LC_Panel extends JPanel {
     public void add(LC_Button comp, Object constraints) {
         addImpl(new JPanel() {{
             add(comp);
-            setOpaque(false);
+            setBackground(LC_Constants.green);
         }}, constraints, -1);
     }
     
