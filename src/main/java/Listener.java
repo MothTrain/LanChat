@@ -81,7 +81,8 @@ public class Listener implements AutoCloseable {
      * @throws IOException if an IOException occurs while reading data
      */
     private Message waitForMessage() throws IOException {
-        int messageLength = dataInputStream.readInt() + 1;
+        int messageLength = dataInputStream.readInt();
+        
         byte[] messageByte = new byte[messageLength];
         int totalBytesRead = 0;
         StringBuilder dataString = new StringBuilder(messageLength);
