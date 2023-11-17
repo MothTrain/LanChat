@@ -50,6 +50,7 @@ public interface LC_Windowable {
      *
      * @param allowed True if the user has accepted, false if the user declined
      */
-    void allowConnection(boolean allowed);
+    void allowConnection(boolean allowed, String username);
+    
 }
 

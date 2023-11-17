@@ -89,6 +89,24 @@ public class LC_Window extends JFrame {
             }});
             
             wrapAdd(new JTextField() {{
+                setText("Username:");
+                
+                setFont(LC_Constants.buttonFont);
+                setEditable(false);
+                setBorder(null);
+                setAlignmentX(Component.CENTER_ALIGNMENT);
+                setMaximumSize(getPreferredSize());
+            }});
+            
+            wrapAdd(usernameInputCreateKey = new JTextField() {{
+                setPreferredSize(new Dimension(200, LC_Constants.buttonFont.getSize()+10));
+                setHorizontalAlignment(CENTER);
+                setFont(LC_Constants.buttonFont);
+                setBorder(LC_Constants.border);
+                setOpaque(false);
+            }});
+            
+            wrapAdd(new JTextField() {{
                 setText("Now Listening For Incoming Connections...");
                 
                 setBorder(null);
@@ -124,7 +142,7 @@ public class LC_Window extends JFrame {
                 setBorder(null);
             }});
             
-            wrapAdd(usernameInput = new JTextField() {{
+            wrapAdd(usernameInputEnterKey = new JTextField() {{
                 setPreferredSize(new Dimension(200, LC_Constants.buttonFont.getSize()+10));
                 setHorizontalAlignment(CENTER);
                 setFont(LC_Constants.buttonFont);
@@ -136,9 +154,7 @@ public class LC_Window extends JFrame {
                 setText("Connect");
                 
                 addActionListener(e -> {
-                    callback.connectTo(connectionKeyInput.getText(), usernameInput.getText());
-                    
-                    setEnabled(false);
+                    callback.connectTo(connectionKeyInput.getText(), usernameInputEnterKey.getText());
                 });
             }});
         }};
@@ -167,7 +183,7 @@ public class LC_Window extends JFrame {
             setLayout(new BorderLayout());
             setBackground(LC_Constants.green);
             
-            add(messageInput = new LC_MessageInput(100) {{
+            add(messageInput = new LC_MessageInput(150) {{
                 setFont(LC_Constants.defaultFont);
                 setBackground(Color.WHITE);
             }}, BorderLayout.CENTER);
@@ -203,7 +219,7 @@ public class LC_Window extends JFrame {
                     setBackground(LC_Constants.receiversRed);
                     
                     addActionListener(e -> {
-                        callback.allowConnection(true);
+                        callback.allowConnection(false, null);
                         
                         bodyCards.show(body, "createKey");
                         menuBarCards.show(menuBar, "createKey");
@@ -213,7 +229,8 @@ public class LC_Window extends JFrame {
                 wrapAdd(new LC_Button() {{
                     setText("Accept");
                     
-                    addActionListener(e -> callback.allowConnection(false));
+                    addActionListener(e -> callback.allowConnection(true, usernameInputCreateKey.getText()));
+                    usernameInputCreateKey.setText("");
                 }});
             }});
             
@@ -335,10 +352,13 @@ public class LC_Window extends JFrame {
         chatPane.reset();
         
         usernameArea.setText(userName);
+        
         messageInput.setText("");
         
-        usernameInput.setText("");
-        messageInput.setText("");
+        connectionKeyInput.setText("");
+        usernameInputEnterKey.setText("");
+        usernameInputCreateKey.setText("");
+        
         
         menuBarCards.show(menuBar, "chat");
         bodyCards.show(body, "chat");
@@ -382,13 +402,15 @@ public class LC_Window extends JFrame {
     private LC_Panel menuBar;
     
     private JTextField keyDisplay;
-    JTextField uncondensedKeyDisplay;
+    private JTextField uncondensedKeyDisplay;
     
     private JTextField usernameArea;
     private LC_ChatPane chatPane;
     private LC_MessageInput messageInput;
     
-    private JTextField usernameInput;
+    private JTextField usernameInputCreateKey;
+    
+    private JTextField usernameInputEnterKey;
     private JTextField connectionKeyInput;
     
     private JTextField allowConnectionText;
