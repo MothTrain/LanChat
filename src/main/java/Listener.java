@@ -28,11 +28,35 @@ public class Listener implements AutoCloseable {
      *
      * @param port     The port to listen on
      * @param callback The manager to callback to
-     * @param timeout the time in milliseconds before the listener times out and reports
+     * @param timeout <b>CURRENTLY UNIMPLEMENTED</b> The time in milliseconds
+     *               before the listener times out and reports
      *                to {@link Managerable#exceptionEncountered(Exception)}
      */
     public Listener(int port, Managerable callback, int timeout) {
         this.port = port;
+        this.callback = callback;
+        this.timeout = timeout;
+        
+        thread.start();
+    }
+    /**
+     * Creates a listener using the socket of a connected sender. This starts the
+     * {@link #thread listening thread}. It will not listen for a connection as it
+     * has one from the sender
+     *
+     * @param sender The connected sender, which socket it will use
+     * @param callback The manager to callback to
+     * @param timeout <b>CURRENTLY UNIMPLEMENTED</b> The time in milliseconds
+     *                before the listener times out and reports
+     *                to {@link Managerable#exceptionEncountered(Exception)}
+     */
+    public Listener(Sender sender, Managerable callback, int timeout) throws IOException {
+        this.clientSocket = sender.getSocket();
+        dataInputStream = new DataInputStream(
+                new BufferedInputStream(
+                        clientSocket.getInputStream()));
+        this.port = sender.getPort();
+        
         this.callback = callback;
         this.timeout = timeout;
         
@@ -120,10 +144,13 @@ public class Listener implements AutoCloseable {
         @Override
         public void run() {
             try {
-                serverSocket = new ServerSocket(port);
-                clientSocket = serverSocket.accept();
+                if (clientSocket == null) {
+                    serverSocket = new ServerSocket(port);
+                    System.out.println("Listener: Listening");
+                    clientSocket = serverSocket.accept();
+                    System.out.println("Listener: Made connection: " + clientSocket.getInetAddress());
+                }
                 
-                clientSocket.setSoTimeout(timeout);
                 dataInputStream = new DataInputStream(
                         new BufferedInputStream(
                                 clientSocket.getInputStream()));
@@ -146,11 +173,23 @@ public class Listener implements AutoCloseable {
         }
     };
     
+    /**
+     * Returns the socket that the Listener is using. This may be {@code null} if the listener
+     * is not connected.
+     *
+     * @apiNote Managers SHOULD NOT use this as a means to perform its own
+     * operations. It should only be used by the listener {@link Sender#Sender(Listener, Managerable, long)}
+     * @return The listener's socket or {@code null} if the listener is not connected
+     */
+    public Socket getSocket() {
+        return clientSocket;
+    }
+    
     public int getPort() {
         return port;
     }
     
     public String getIP() {
-        return clientSocket.getInetAddress().toString();
+        return clientSocket.getInetAddress().toString().substring(1);
     }
 }

@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +63,7 @@ public class Sender implements AutoCloseable {
     private final LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<>(1);
     
     
-     /**
+    /**
      * Creates a sender instance. This does not start the {@link #thread} so
      * {@link MessageTypes#WATCHDOG_KICK WATCHDOG_KICKing} will not happen
      *
@@ -74,11 +75,34 @@ public class Sender implements AutoCloseable {
      * @throws IOException if an IOException occurs
      */
     public Sender(String ipAddress, int port, Managerable callback, long kickRate) throws IOException {
-        
         this.callback = callback;
         this.kickRate = kickRate;
         
+        
         socket = new Socket(ipAddress, port);
+        
+        outputStream = new DataOutputStream(socket.getOutputStream());
+        
+        closed = false;
+    }
+    
+    /**
+     * Creates a sender using a connected {@link Listener}. This uses the Listener's
+     * socket and assigns/shares it with the sender.
+     *
+     * @param listener The connected listener
+     * @param callback The callback for exception reporting
+     * @param kickRate How often to send watchdog kicks
+     * @throws IOException If an IOException occurs
+     * @throws IllegalArgumentException If the Listener's socket is null (ie: the
+     * listener is not connected)
+     */
+    public Sender(Listener listener, Managerable callback, long kickRate) throws IOException {
+        this.callback = callback;
+        this.kickRate = kickRate;
+        
+        socket = listener.getSocket();
+        if (socket == null) {throw new IllegalArgumentException("The listener socket is null");}
         outputStream = new DataOutputStream(socket.getOutputStream());
         
         closed = false;
@@ -115,6 +139,7 @@ public class Sender implements AutoCloseable {
     private synchronized void writeThroughSocket(Message message) throws IOException {
         byte[] msg = message.toSendableBytes();
         
+        System.out.println("sent:" + message.toJson());
         outputStream.write(msg);
         outputStream.flush();
         
@@ -155,6 +180,30 @@ public class Sender implements AutoCloseable {
      */
     public boolean isClosed() {
         return closed;
+    }
+    
+    /**
+     * Gets the destination {@link Socket#getInetAddress() InetAddress}
+     * @return The InetAddress
+     */
+    public String getDestIP() {
+        return socket.getInetAddress().toString();
+    }
+    
+    public int getPort() {
+        return socket.getPort();
+    }
+    
+    /**
+     * Returns the socket that the sender is using. This will always be connected as the socket
+     * is connected in the constructor, unless an exception has occurred
+     *
+     * @apiNote Managers SHOULD NOT use this as a means to perform its own
+     * operations. It should only be used by the listener {@link Listener#Listener(Sender, Managerable, int)}
+     * @return The Sender's socket
+     */
+    public Socket getSocket() {
+        return socket;
     }
     
     /**
@@ -199,13 +248,14 @@ public class Sender implements AutoCloseable {
                         close();
                         callback.exceptionEncountered(e);
                     }
-                    continue;
-                }
-                try {
-                    writeThroughSocket(message);
-                } catch (IOException e) {
-                    close();
-                    callback.exceptionEncountered(e);
+                    
+                } else {
+                    try {
+                        writeThroughSocket(message);
+                    } catch (IOException e) {
+                        close();
+                        callback.exceptionEncountered(e);
+                    }
                 }
             }
             
