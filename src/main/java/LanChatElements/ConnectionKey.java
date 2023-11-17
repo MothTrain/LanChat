@@ -112,6 +112,7 @@ public class ConnectionKey {
                 IP.append(toBase10(splitKey[i]));
                 IP.append(".");
             }
+            IP.deleteCharAt(IP.length()-1);
             
             int port = Integer.parseInt(toBase10(splitKey[4]));
             
