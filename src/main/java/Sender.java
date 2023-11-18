@@ -1,5 +1,4 @@
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +52,7 @@ public class Sender implements AutoCloseable {
      * The closed boolean indicates if the socket is not ready to send messages.
      * An exception must be thrown if connected if true, when a message is attempted to be sent.
      */
-    private boolean closed = true;
+    private boolean closed;
     
     /**
      * Queue that messages are writen to, that are to be sent. The queue is only used
