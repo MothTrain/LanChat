@@ -44,3 +44,4 @@ build/
 
 /src/main/resources/jre/bin/java.exe
 /src/main/resources/jre/bin/
+/.idea/
