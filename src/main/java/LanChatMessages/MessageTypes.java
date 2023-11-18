@@ -1,6 +1,5 @@
 package LanChatMessages;
 
-import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
 
 /**

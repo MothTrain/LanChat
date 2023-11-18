@@ -153,9 +153,7 @@ public class LC_Window extends JFrame {
             add(new LC_Button() {{
                 setText("Connect");
                 
-                addActionListener(e -> {
-                    callback.connectTo(connectionKeyInput.getText(), usernameInputEnterKey.getText());
-                });
+                addActionListener(e -> callback.connectTo(connectionKeyInput.getText(), usernameInputEnterKey.getText()));
             }});
         }};
         

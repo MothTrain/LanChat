@@ -6,8 +6,6 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
-import java.io.StringBufferInputStream;
-import java.text.AttributedString;
 import java.util.ArrayList;
 
 public class LC_ChatPane extends JScrollPane{
@@ -22,7 +20,7 @@ public class LC_ChatPane extends JScrollPane{
         getVerticalScrollBar().setUnitIncrement(15);
     }
     
-    StyledDocument doc = textPane.getStyledDocument();
+    final StyledDocument doc = textPane.getStyledDocument();
     
     
     public void reset() {
