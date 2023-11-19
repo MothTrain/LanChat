@@ -25,7 +25,7 @@ public class LC_Window extends JFrame {
     
     private void setUpJframe() {
         setTitle("LanChat");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 400);
         setResizable(false);
         setLocationRelativeTo(null);
