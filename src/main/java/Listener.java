@@ -6,6 +6,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 
@@ -20,7 +21,6 @@ public class Listener implements AutoCloseable {
     private DataInputStream dataInputStream;
     private final int port;
     private final Managerable callback;
-    private final int timeout;
     
     /**
      * Creates a listener using the port and starts the {@link #thread listening thread},
@@ -28,14 +28,10 @@ public class Listener implements AutoCloseable {
      *
      * @param port     The port to listen on
      * @param callback The manager to callback to
-     * @param timeout <b>CURRENTLY UNIMPLEMENTED</b> The time in milliseconds
-     *               before the listener times out and reports
-     *                to {@link Managerable#exceptionEncountered(Exception)}
      */
-    public Listener(int port, Managerable callback, int timeout) {
+    public Listener(int port, Managerable callback) {
         this.port = port;
         this.callback = callback;
-        this.timeout = timeout;
         
         thread.start();
     }
@@ -46,11 +42,8 @@ public class Listener implements AutoCloseable {
      *
      * @param sender The connected sender, which socket it will use
      * @param callback The manager to callback to
-     * @param timeout <b>CURRENTLY UNIMPLEMENTED</b> The time in milliseconds
-     *                before the listener times out and reports
-     *                to {@link Managerable#exceptionEncountered(Exception)}
      */
-    public Listener(Sender sender, Managerable callback, int timeout) throws IOException {
+    public Listener(Sender sender, Managerable callback) throws IOException {
         this.clientSocket = sender.getSocket();
         dataInputStream = new DataInputStream(
                 new BufferedInputStream(
@@ -58,7 +51,6 @@ public class Listener implements AutoCloseable {
         this.port = sender.getPort();
         
         this.callback = callback;
-        this.timeout = timeout;
         
         thread.start();
     }
@@ -133,6 +125,19 @@ public class Listener implements AutoCloseable {
     }
     
     /**
+     * Sets the length that read operations will take to timeout.
+     * This will be communicated to the manager by a call to
+     * {@link Managerable#exceptionEncountered(Exception)} with
+     * {@link SocketTimeoutException}
+     * @param timeout Socket timeout length
+     * @throws SocketException If an IOException occurs, while setting the
+     * socket timeout
+     */
+    public void setTimeout(int timeout) throws SocketException {
+        clientSocket.setSoTimeout(timeout);
+    }
+    
+    /**
      * The thread waits for an incoming connection and, once received,
      * will begin waiting for messages using {@link #waitForMessage()}
      * and will send it to the manager. If the wait times out then the
@@ -155,7 +160,6 @@ public class Listener implements AutoCloseable {
                         new BufferedInputStream(
                                 clientSocket.getInputStream()));
                 
-                
                 System.out.println("Client connected: " + clientSocket.getInetAddress());
                 
                 while (!isInterrupted()) {
@@ -164,6 +168,7 @@ public class Listener implements AutoCloseable {
                     System.out.println("Received JSON data: " + jsonData.toJson());
                     callback.messageReceived(jsonData);
                 }
+            
             } catch (SocketTimeoutException e) {
                 reportException(e);
             } catch (IOException e) {

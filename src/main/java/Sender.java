@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -111,8 +112,6 @@ public class Sender implements AutoCloseable {
      * Sends a message through the sender
      *
      * @param message The message to send
-     * @throws IllegalStateException If the sender queue is full
-     * or the Sender is closed
      * @throws IOException If an IO exception occurs
      *
      * @see #writeThroughSocket(Message)
@@ -120,7 +119,7 @@ public class Sender implements AutoCloseable {
      */
     public synchronized void sendMessage(Message message) throws IllegalStateException, IOException {
         if (closed) {
-            throw new IllegalStateException("The Sender is closed");
+            throw new SocketException("The Sender is closed");
         } else if (!active) {
             writeThroughSocket(message);
         } else {
@@ -198,7 +197,7 @@ public class Sender implements AutoCloseable {
      * is connected in the constructor, unless an exception has occurred
      *
      * @apiNote Managers SHOULD NOT use this as a means to perform its own
-     * operations. It should only be used by the listener {@link Listener#Listener(Sender, Managerable, int)}
+     * operations. It should only be used by the listener {@link Listener#Listener(Sender, Managerable)}
      * @return The Sender's socket
      */
     public Socket getSocket() {
@@ -244,16 +243,16 @@ public class Sender implements AutoCloseable {
                     try {
                         writeThroughSocket(msg);
                     } catch (IOException e) {
-                        close();
                         callback.exceptionEncountered(e);
+                        close();
                     }
                     
                 } else {
                     try {
                         writeThroughSocket(message);
                     } catch (IOException e) {
-                        close();
                         callback.exceptionEncountered(e);
+                        close();
                     }
                 }
             }
