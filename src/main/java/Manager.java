@@ -6,6 +6,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
@@ -23,6 +24,9 @@ public class Manager implements LC_Windowable, Managerable {
         Manager manager = new Manager();
     }
     
+    
+    
+    // LC_Windowable methods
     @Override
     public ConnectionKey connectionListen() {
         int port = ConnectionKey.getRandomPort();
@@ -30,7 +34,7 @@ public class Manager implements LC_Windowable, Managerable {
         ConnectionKey key;
         try {
             key = new ConnectionKey(port);
-        } catch (IOException e) {
+        } catch (IOException | UncheckedIOException e) {
             ExceptionLogger.log(Level.WARN, e);
             return null;
         }
@@ -58,7 +62,7 @@ public class Manager implements LC_Windowable, Managerable {
                 put("Username", username);
             }}, stage));
             
-        } catch (IOException e) {
+        } catch (IOException | UncheckedIOException e) {
             window.resetAndDisplayError("Couldn't connect: " +
                     "check your \ninternet connection and try again. "
                     + "[" + ExceptionLogger.log(Level.WARN, e) + "]");
@@ -86,7 +90,7 @@ public class Manager implements LC_Windowable, Managerable {
                 put("MsgType", "MSG");
                 put("Content", message);
             }}, stage));
-        } catch (IOException e) {
+        } catch (IOException | UncheckedIOException e) {
             window.resetAndDisplayError("Couldn't send: " +
                     "check your \ninternet connection and try again. "
                     + "[" +ExceptionLogger.log(Level.ERROR, e) + "]");
@@ -104,7 +108,7 @@ public class Manager implements LC_Windowable, Managerable {
                 put("MsgType", "END_CONNECTION");
             }}, stage));
         } catch (NullPointerException ignored) {}
-        catch (IOException e) {
+        catch (IOException | UncheckedIOException e) {
             ExceptionLogger.log(Level.INFO, e);
         }
         
@@ -119,7 +123,7 @@ public class Manager implements LC_Windowable, Managerable {
             }}, stage));
             
         } catch (NullPointerException ignored) {}
-        catch (IOException e) {
+        catch (IOException | UncheckedIOException e) {
             ExceptionLogger.log(Level.INFO, e);
         }
         
@@ -159,7 +163,7 @@ public class Manager implements LC_Windowable, Managerable {
                 
                 window.connectionMade(Username);
                 
-            } catch (IOException e) {
+            } catch (IOException | UncheckedIOException e) {
                 window.resetAndDisplayError("Couldn't Connect: " +
                         "check your \ninternet connection and try again. "
                         + "[" +ExceptionLogger.log(Level.WARN, e) + "]");
@@ -179,7 +183,7 @@ public class Manager implements LC_Windowable, Managerable {
                 
                 sender.close();
                 sender = null;
-            } catch (IOException e) {
+            } catch (IOException | UncheckedIOException e) {
                 window.resetAndDisplayError("Couldn't Connect: " +
                         "check your \ninternet connection and try again. "
                         + "[" +ExceptionLogger.log(Level.WARN, e) + "]");
@@ -233,7 +237,7 @@ public class Manager implements LC_Windowable, Managerable {
                     }}, stage));
                     
                     waitingForBark = false;
-                } catch (IOException e) {
+                } catch (IOException | UncheckedIOException e) {
                     exceptionEncountered(e);
                 }
             }
@@ -261,7 +265,7 @@ public class Manager implements LC_Windowable, Managerable {
                     sender.sendMessage(new Message(new JsonObject() {{
                         put("MsgType", "WATCHDOG_KICK");
                     }}, stage));
-                } catch (IOException ex) {
+                } catch (IOException | UncheckedIOException ex) {
                     
                     window.resetAndDisplayError("Couldn't check connection " +
                             "check your \ninternet connection and try again. "

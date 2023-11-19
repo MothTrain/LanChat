@@ -383,6 +383,10 @@ public class LC_Window extends JFrame {
         bodyCards.show(body, "start");
         menuBarCards.show(menuBar, "start");
         
+        DisplayError(errMsg);
+    }
+    
+    public void DisplayError(String errMsg) {
         JOptionPane.showMessageDialog(this, errMsg, "Aw Snap!",
                 JOptionPane.ERROR_MESSAGE, error);
     }
