@@ -1,12 +1,12 @@
 # LanChat
 A java aplication that allows you to message on the same LAN network. It works
-on a peer-to-peer basis, where one node connects to a listening node with a 
-connection key created by the listening node
+on a peer-to-peer basis, where node A connects to a listening node B with a 
+connection key created by node B
 
 ## Disclaimer
 - This is a personal project of mine
 - This is not a fully stable project
-- It has no Denial of Service protection
+- It has no DoS protection
 - It has no Encryption
 - Because this is meant to be part of a portfolio (It is a demonstration of my
   own abilites) so I will ignore or decline any pull requests made
